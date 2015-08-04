@@ -37,7 +37,8 @@ command :list do |list|
   list.description = "List tasks"
   list.action do |args, options|
     tasks_dataset.order(:due).each do |task|
-      puts "%-20s #{task[:due].strftime("%A [%m/%d]")}" % task[:description] 
+      check = task[:completed] ? "\u2713".encode('utf-8') : "\u2716".encode('utf-8')
+      puts "#{check} %-20s #{task[:due].strftime("%A [%m/%d]")}" % task[:description] 
     end
   end
 end
@@ -63,6 +64,9 @@ command :complete do |complete|
   complete.syntax = "easytask complete"
   complete.description = "Mark task complete"
   complete.action do |args, options|
-    options.id = ask("Task id's: ")
+    options.descriptions = ask_for_array("Task description(s): ")
+    options.descriptions.each do |d|
+      tasks_dataset.where(description: d).update(completed: true)
+    end
   end
 end

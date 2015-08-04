@@ -26,6 +26,16 @@ command :create do |create|
   create.action do |args, options|
     options.description = ask("Task Description: ") unless options.description
     tasks_db.insert(description: options.description, completed: false)
-    say "Task Created"
+    puts "Task Created"
+  end
+end
+
+command :list do |list|
+  list.syntax = "easytask list"
+  list.description = "List tasks"
+  list.action do |args, options|
+    tasks_db.each do |task|
+      puts "#{task[:id]}. #{task[:description]}"
+    end
   end
 end

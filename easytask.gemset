@@ -6,7 +6,9 @@ Gem::Specification.new do |s|
   s.description = "Command Line Task Manager w/ Persistent SQLite3 Database"
   s.authors = [ "Cody Roberts"  ]
   s.email = 'codyjroberts@gmail.com'
-  s.executables << 'easytask'
+  s.files = Dir["lib/*.rb"] + Dir["bin/*"]
+  s.executables = ["easytask"]
+  s.require_paths = ["lib"]
 
   ['commander', 'sqlite3', 'sequel'].each do |dep|
     s.add_dependency dep

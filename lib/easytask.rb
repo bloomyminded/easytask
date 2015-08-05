@@ -7,7 +7,11 @@ program :name, "Easy Task"
 program :version, '0.0.1'
 program :description, "CLI Task Manager"
 
-DB = Sequel.sqlite('tasks.db')
+db_dir = File.expand_path('~/.easytask')
+Dir::mkdir(db_dir) unless Dir.exists? db_dir
+
+
+DB = Sequel.sqlite("#{db_dir}/tasks.db")
 
 unless DB.table_exists? :tasks
   DB.create_table(:tasks) do
@@ -28,6 +32,11 @@ command :mk do |create|
     options.due_date = args[1] || ask_for_date("Due Date: ")
     tasks_dataset.insert(description: options.description, due: options.due_date, completed: false)
     puts "Task \"#{options.description}\" created"
+    puts
+    tasks_dataset.order(:completed, :due).each do |task|
+      check = task[:completed] ? "\u2713".encode('utf-8') : "\u2716".encode('utf-8')
+      puts "#{check} %-20s %-20s %-5s" % [task[:description], task[:due].strftime("%10A [%m/%d]"), "{#{task[:id]}}"]
+    end
   end
 end
 
@@ -50,8 +59,9 @@ command :rm do |remove|
     tasks = tasks_dataset.map(:description)
     if tasks.empty?
       puts "No tasks to remove"
-    elsif options.A
+    elsif options.a
       tasks_dataset.delete
+      puts "Removed all tasks"
     else
       options.description = ask_for_array("Task id(s): ")
       options.description.each do |task|
@@ -62,6 +72,11 @@ command :rm do |remove|
           puts "Task \"#{task}\" not found"
         end
       end
+    end
+    puts
+    tasks_dataset.order(:completed, :due).each do |task|
+      check = task[:completed] ? "\u2713".encode('utf-8') : "\u2716".encode('utf-8')
+      puts "#{check} %-20s %-20s %-5s" % [task[:description], task[:due].strftime("%10A [%m/%d]"), "{#{task[:id]}}"]
     end
   end
 end
@@ -78,6 +93,11 @@ command :fin do |complete|
       else
         tasks_dataset.where(description: d).update(completed: true)
       end
+    end
+    puts
+    tasks_dataset.order(:completed, :due).each do |task|
+      check = task[:completed] ? "\u2713".encode('utf-8') : "\u2716".encode('utf-8')
+      puts "#{check} %-20s %-20s %-5s" % [task[:description], task[:due].strftime("%10A [%m/%d]"), "{#{task[:id]}}"]
     end
   end
 end
